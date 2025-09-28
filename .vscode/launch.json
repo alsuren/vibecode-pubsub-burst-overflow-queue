@@ -2,15 +2,44 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Run application",
+      "name": "Run web application",
       "type": "node",
       "request": "launch",
-      "cwd": "${workspaceFolder}",
+      "cwd": "${workspaceFolder}/web-tier",
       "console": "integratedTerminal",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
         "run-script",
         "start"
+      ],
+      "skipFiles": [
+        "<node_internals>/**"
+      ]
+    },
+    {
+      "name": "Run async consumer",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/async-tier",
+      "console": "integratedTerminal",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run-script",
+        "start"
+      ],
+      "skipFiles": [
+        "<node_internals>/**"
+      ]
+    },
+    {
+      "name": "Test async tier",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/async-tier",
+      "console": "integratedTerminal",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "test"
       ],
       "skipFiles": [
         "<node_internals>/**"

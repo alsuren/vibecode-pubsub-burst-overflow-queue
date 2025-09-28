@@ -4,7 +4,7 @@
     "cpus": 4
   },
   "waitFor": "onCreateCommand",
-  "updateContentCommand": "npm install",
+  "updateContentCommand": "npm run install:all",
   "postCreateCommand": "",
   "postAttachCommand": {
     "server": "npm start"
@@ -12,7 +12,9 @@
   "customizations": {
     "codespaces": {
       "openFiles": [
-        "src/App.jsx"
+        "web-tier/src/App.jsx",
+        "async-tier/pubsub-pull-consumer.js",
+        "README.md"
       ]
     }
   },

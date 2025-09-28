@@ -1,0 +1,13 @@
+{
+  "name": "async-tier",
+  "version": "1.0.0",
+  "main": "pubsub-pull-consumer.js",
+  "license": "MIT",
+  "dependencies": {
+    "@google-cloud/pubsub": "^4.0.0"
+  },
+  "scripts": {
+    "start": "node pubsub-pull-consumer.js",
+    "emulator": "gcloud beta emulators pubsub start --host-port=localhost:8085"
+  }
+}

@@ -3,16 +3,18 @@
   "version": "1.0.0",
   "description": "Multi-tier Pub/Sub application with web frontend and async message processing",
   "scripts": {
-    "start": "npm run start:web",
+    "start": "npm run dev:web",
     "start:web": "cd web-tier && npm start",
     "start:async": "cd async-tier && npm start",
+    "dev:web": "cd web-tier && npm run dev",
+    "api": "cd web-tier && npm run api",
     "build": "npm run build:web",
     "build:web": "cd web-tier && npm run build",
     "test": "npm run test:web && npm run test:async",
     "test:web": "cd web-tier && npm test",
     "test:async": "cd async-tier && npm test",
     "install:all": "npm install && cd web-tier && npm install && cd ../async-tier && npm install",
-    "dev": "concurrently \"npm run start:web\" \"npm run start:async\"",
+    "dev": "concurrently \"npm run dev:web\" \"npm run start:async\"",
     "emulator": "cd async-tier && node start-emulator-docker.js"
   },
   "workspaces": [

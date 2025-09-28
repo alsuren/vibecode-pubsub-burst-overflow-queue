@@ -58,8 +58,45 @@ async function pollForMessages() {
       for (const receivedMessage of messagesToProcess) {
         received++;
         const message = receivedMessage.message;
-        console.log(`Received message from ${currentQueue} queue:`, receivedMessage.ackId);
-        console.log('Data:', message.data.toString());
+        const receivedAt = new Date();
+        
+        // Parse message data to extract timestamp and calculate traversal time
+        let messageData, traversalTime, messageTimestamp;
+        try {
+          const dataString = message.data.toString();
+          
+          // Try to parse as JSON (from our GUI)
+          try {
+            const parsed = JSON.parse(dataString);
+            messageData = parsed.content || dataString;
+            messageTimestamp = new Date(parsed.timestamp);
+            traversalTime = receivedAt - messageTimestamp;
+          } catch {
+            // Fallback for plain text messages
+            messageData = dataString;
+            messageTimestamp = null;
+            traversalTime = null;
+          }
+        } catch (error) {
+          messageData = 'Unable to parse message data';
+          messageTimestamp = null;
+          traversalTime = null;
+        }
+        
+        console.log(`\n📨 Message from ${currentQueue.toUpperCase()} queue:`);
+        console.log(`   ID: ${receivedMessage.ackId}`);
+        console.log(`   Content: ${messageData}`);
+        
+        if (messageTimestamp && traversalTime !== null) {
+          console.log(`   📅 Published: ${messageTimestamp.toISOString()}`);
+          console.log(`   📨 Received: ${receivedAt.toISOString()}`);
+          console.log(`   ⏱️  Queue traversal time: ${traversalTime}ms`);
+          
+          if (traversalTime > 5000) {
+            console.log(`   ⚠️  HIGH LATENCY: Message was in queue for ${(traversalTime/1000).toFixed(1)}s`);
+          }
+        }
+        
         ackIds.push(receivedMessage.ackId);
         
         if (received >= pullLimit) break;

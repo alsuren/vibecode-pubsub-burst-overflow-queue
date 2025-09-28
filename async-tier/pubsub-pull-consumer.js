@@ -5,6 +5,7 @@ const { SyncPubSubClient } = require('./sync-pubsub-client');
 
 const projectId = process.env.PUBSUB_PROJECT_ID || 'test-project';
 const subscriptionName = process.env.PUBSUB_SUBSCRIPTION || 'test-sub';
+const overflowSubscriptionName = process.env.PUBSUB_OVERFLOW_SUBSCRIPTION || 'test-overflow-sub';
 
 if (process.env.PUBSUB_EMULATOR_HOST) {
   console.log('Using Pub/Sub emulator at', process.env.PUBSUB_EMULATOR_HOST);
@@ -19,29 +20,45 @@ async function pollForMessages() {
   
   let received = 0;
   console.log('Using SYNCHRONOUS Pull gRPC method');
-  console.log('Polling for messages on subscription:', subscriptionName);
+  console.log('Polling for messages on subscriptions:', subscriptionName, '(normal) and', overflowSubscriptionName, '(overflow)');
 
   while (received < pullLimit) {
     try {
-      console.log('Polling for messages...');
+      console.log('Polling for messages from normal queue...');
       
-      // Use our custom synchronous pull method
+      // First, try to pull from the normal subscription
       const messages = await client.pullSync(subscriptionName, {
         maxMessages: Math.min(maxMessages, pullLimit - received),
         returnImmediately: true
       });
 
+      let messagesToProcess = messages;
+      let currentQueue = 'normal';
+
+      // If no messages from normal queue, check overflow queue
       if (messages.length === 0) {
-        console.log('No messages received, waiting...');
+        console.log('No messages in normal queue, checking overflow queue...');
+        const overflowMessages = await client.pullSync(overflowSubscriptionName, {
+          maxMessages: Math.min(maxMessages, pullLimit - received),
+          returnImmediately: true
+        });
+        messagesToProcess = overflowMessages;
+        currentQueue = 'overflow';
+      }
+
+      if (messagesToProcess.length === 0) {
+        console.log('No messages in either queue, waiting...');
         await new Promise(resolve => setTimeout(resolve, pollIntervalMs));
         continue;
       }
 
       const ackIds = [];
-      for (const receivedMessage of messages) {
+      const currentSubscription = currentQueue === 'normal' ? subscriptionName : overflowSubscriptionName;
+      
+      for (const receivedMessage of messagesToProcess) {
         received++;
         const message = receivedMessage.message;
-        console.log('Received message:', receivedMessage.ackId);
+        console.log(`Received message from ${currentQueue} queue:`, receivedMessage.ackId);
         console.log('Data:', message.data.toString());
         ackIds.push(receivedMessage.ackId);
         
@@ -49,8 +66,8 @@ async function pollForMessages() {
       }
 
       if (ackIds.length > 0) {
-        await client.acknowledge(subscriptionName, ackIds);
-        console.log('Acknowledged', ackIds.length, 'message(s)');
+        await client.acknowledge(currentSubscription, ackIds);
+        console.log(`Acknowledged ${ackIds.length} message(s) from ${currentQueue} queue`);
       }
 
     } catch (error) {

@@ -8,6 +8,7 @@
   },
   "scripts": {
     "start": "node pubsub-pull-consumer.js",
-    "emulator": "gcloud beta emulators pubsub start --host-port=localhost:8085"
+    "emulator": "gcloud beta emulators pubsub start --host-port=localhost:8085",
+    "test": "bash test-e2e.sh"
   }
 }
